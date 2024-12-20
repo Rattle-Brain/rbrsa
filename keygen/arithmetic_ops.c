@@ -3,30 +3,65 @@
 
     Description: This file contains the functions to help the RBRSA keygen program.
 */
-#include "functions.h"
+#include "arithmetic_ops.h"
+#include <stdint.h>
+#include <stdio.h>
+#include <time.h>
+#include <gmp.h>
+
+
+// Array of Valid pairs
+valid_pair valid_pairs[] = {
+    {MIN_L, MIN_N},
+    {MID_L, MID_N},
+    {MID_L, MAX_N},
+    {MAX_L, MAX_N}
+};
 
 // Function to check if a number is prime
-int is_prime(int n) {
+int is_prime(unsigned long long n) {
     if (n <= 1) return 0;
     if (n <= 3) return 1;
     if (n % 2 == 0 || n % 3 == 0) return 0;
 
-    for (int i = 5; i * i <= n; i += 6) {
+    for (unsigned long long i = 5; i * i <= n; i += 6) {
         if (n % i == 0 || n % (i + 2) == 0) return 0;
     }
 
     return 1;
 }
 
-// Function to generate a random prime number
-int generate_prime() {
-    int prime = rand() % 1000 + 1000;
 
-    while (!is_prime(prime)) {
-        prime++;
+uint8_t* randomizer(int num_bytes){
+    uint8_t* prime = malloc(num_bytes);
+    int rand_byte;
+
+    int i;
+    for(i = 0; i < num_bytes; i++){
+        srand(rand() + time(NULL));
+        rand_byte = rand() % 256;
+        prime[i] = rand_byte;
+
     }
 
     return prime;
+}
+
+// Function to generate a random prime number with a specified bit length
+uint8_t* generate_prime_with_bit_length(int bit_length) {
+    if(bit_length < 2) return NULL;
+    int num_bytes = bit_length / 8;
+
+    uint8_t* prime_array;
+    mpz_t prime;
+    mpz_init(prime);
+
+    do {
+        prime_array = randomizer(num_bytes);
+        mpz_import(prime, bit_length, 1, 1, 0, 0, prime_array);
+    } while (mpz_probab_prime_p(prime, 25) != 2);
+
+    return prime_array;
 }
 
 // Function to calculate the greatest common divisor of two numbers
@@ -79,3 +114,9 @@ int calculate_e(int p, int c_totient) {
 int calculate_d(int e, int p, int q) {
     return mod_inverse(e, carmichael(p, q));
 }
+
+char* nomrbefunct(char p1, int p2, float p3, double* p4){
+
+    return "This is a dummy function";
+}
+
