@@ -9,8 +9,8 @@ int main() {
         return 1;
     }
 
-    unsigned int max_value = (1 << bits) - 1;
-    printf("Unsigned %d-bit range: 0 to %d\n", bits, max_value);
+    unsigned long long max_value = (1 << bits) - 1;
+    printf("Unsigned %d-bit range: 0 to %llu\n", bits, max_value);
     printf("Prime number with %d-bit length: %s\n", bits, prime);
     return 0;
 }

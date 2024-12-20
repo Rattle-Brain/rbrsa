@@ -37,12 +37,13 @@ uint8_t* randomizer(int num_bytes){
     int rand_byte;
 
     int i;
+    perror("sonda 1");
     for(i = 0; i < num_bytes; i++){
         srand(rand() + time(NULL));
         rand_byte = rand() % 256;
         prime[i] = rand_byte;
-
     }
+    perror("sonda 2");
 
     return prime;
 }
@@ -52,15 +53,24 @@ uint8_t* generate_prime_with_bit_length(int bit_length) {
     if(bit_length < 2) return NULL;
     int num_bytes = bit_length / 8;
 
+    perror("sonda 3");
+
     uint8_t* prime_array;
     mpz_t prime;
     mpz_init(prime);
 
     do {
         prime_array = randomizer(num_bytes);
-        mpz_import(prime, bit_length, 1, 1, 0, 0, prime_array);
-    } while (mpz_probab_prime_p(prime, 25) != 2);
 
+        perror("sonda 4");
+        __gmpz_import(prime, num_bytes, 1, 1, 1, 0, prime_array);
+
+        perror("sonda 5");
+    } while (mpz_probab_prime_p(prime, 150) == 0);
+    mpz_clear(prime);
+
+
+    perror("sonda 6");
     return prime_array;
 }
 
