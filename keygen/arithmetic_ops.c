@@ -115,8 +115,3 @@ int calculate_d(int e, int p, int q) {
     return mod_inverse(e, carmichael(p, q));
 }
 
-char* nomrbefunct(char p1, int p2, float p3, double* p4){
-
-    return "This is a dummy function";
-}
-
