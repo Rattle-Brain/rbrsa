@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <sys/types.h>
+#include <gmp.h>
 
 #define SUCCESS 0
 #define FAILURE -1
@@ -29,11 +30,11 @@ typedef struct {
 // Function prototypes
 int is_prime(unsigned long long n);
 int generate_prime();
-uint8_t* generate_prime_with_bit_length(int bit_length);
-int gcd(int a, int b);
-int lcm(int a, int b);
-int mod_inverse(int a, int m);
-int carmichael(int p, int q);
-int calculate_n(int p, int q);
-int calculate_e(int p, int q);
-int calculate_d(int e, int p, int q);
+void generate_prime_with_bit_length(mpz_t prime, int bit_length);
+void gcd(mpz_t result, const mpz_t a, const mpz_t b);
+void lcm(mpz_t result, const mpz_t a, const mpz_t b);
+int mod_inverse(mpz_t result, const mpz_t a, const mpz_t m);
+void carmichael(mpz_t result, const mpz_t p, const mpz_t q);
+void calculate_n(mpz_t n, const mpz_t p, const mpz_t q);
+void calculate_e(mpz_t e, const mpz_t c_totient);
+void calculate_d(mpz_t d, const mpz_t e, const mpz_t c_totient);

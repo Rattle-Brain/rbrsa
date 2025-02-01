@@ -7,7 +7,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
-#include <gmp.h>
 
 
 // Array of Valid pairs
@@ -18,110 +17,83 @@ valid_pair valid_pairs[] = {
     {MAX_L, MAX_N}
 };
 
-// Function to check if a number is prime
-int is_prime(unsigned long long n) {
-    if (n <= 1) return 0;
-    if (n <= 3) return 1;
-    if (n % 2 == 0 || n % 3 == 0) return 0;
-
-    for (unsigned long long i = 5; i * i <= n; i += 6) {
-        if (n % i == 0 || n % (i + 2) == 0) return 0;
-    }
-
-    return 1;
-}
-
-
-uint8_t* randomizer(int num_bytes){
-    uint8_t* prime = malloc(num_bytes);
-    int rand_byte;
-
-    int i;
-    perror("sonda 1");
-    for(i = 0; i < num_bytes; i++){
-        srand(rand() + time(NULL));
-        rand_byte = rand() % 256;
-        prime[i] = rand_byte;
-    }
-    perror("sonda 2");
-
-    return prime;
-}
-
 // Function to generate a random prime number with a specified bit length
-uint8_t* generate_prime_with_bit_length(int bit_length) {
-    if(bit_length < 2) return NULL;
-    int num_bytes = bit_length / 8;
+void generate_prime_with_bit_length(mpz_t prime, int bit_length) {
+    if (bit_length < 2) {
+        fprintf(stderr, "Error: Bit length must be at least 2.\n");
+        exit(EXIT_FAILURE);
+    }
 
-    perror("sonda 3");
-
-    uint8_t* prime_array;
-    mpz_t prime;
-    mpz_init(prime);
+    gmp_randstate_t state;
+    gmp_randinit_mt(state);
+    gmp_randseed_ui(state, time(NULL));
 
     do {
-        prime_array = randomizer(num_bytes);
+        mpz_urandomb(prime, state, bit_length);
+        mpz_setbit(prime, bit_length - 1);          // Ensure the number is of the desired bit length
+        mpz_setbit(prime, 0);                       // Ensure it's odd
+    } while (mpz_probab_prime_p(prime, 25) == 0);   // Use Miller-Rabin test
 
-        perror("sonda 4");
-        __gmpz_import(prime, num_bytes, 1, 1, 1, 0, prime_array);
-
-        perror("sonda 5");
-    } while (mpz_probab_prime_p(prime, 150) == 0);
-    mpz_clear(prime);
-
-
-    perror("sonda 6");
-    return prime_array;
+    gmp_randclear(state);
 }
+
 
 // Function to calculate the greatest common divisor of two numbers
-int gcd(int a, int b) {
-    if (b == 0) return a;
-    return gcd(b, a % b);
+void gcd(mpz_t result, const mpz_t a, const mpz_t b) {
+    mpz_gcd(result, a, b);
 }
 
-// Function to calculate the least commmon multiple of two numbers
-int lcm(int a, int b) {
-    return a * b / gcd(a, b);
+// Function to calculate the least common multiple of two numbers
+void lcm(mpz_t result, const mpz_t a, const mpz_t b) {
+    mpz_lcm(result, a, b);
 }
 
 // Function to calculate the modular multiplicative inverse
-int mod_inverse(int a, int m) {
-    a = a % m;
-
-    for (int x = 1; x < m; x++) {
-        if ((a * x) % m == 1) return x;
+int mod_inverse(mpz_t result, const mpz_t a, const mpz_t m) {
+    if (mpz_invert(result, a, m) == 0) {
+        fprintf(stderr, "Error: Modular inverse does not exist.\n");
+        return 0;
     }
-
     return 1;
 }
 
-// Carmichael's totient function
-int carmichael(int p, int q) {
-    return lcm(p - 1, q - 1);
+// Function to calculate Carmichael's totient function
+void carmichael(mpz_t result, const mpz_t p, const mpz_t q) {
+    mpz_t p1, q1;
+    mpz_inits(p1, q1, NULL);
+
+    mpz_sub_ui(p1, p, 1);
+    mpz_sub_ui(q1, q, 1);
+    lcm(result, p1, q1);
+
+    mpz_clears(p1, q1, NULL);
 }
 
-
-// Function to calculate n
-int calculate_n(int p, int q) {
-    return p * q;
+// Function to calculate n = p * q
+void calculate_n(mpz_t n, const mpz_t p, const mpz_t q) {
+    mpz_mul(n, p, q);
 }
 
 // Function to calculate e such that 1 < e < c_totient and gcd(e, c_totient) = 1
-// ensuring that e has a short bit length and small Hamming weight
-int calculate_e(int p, int c_totient) {
-    int e = 3;
+void calculate_e(mpz_t e, const mpz_t c_totient) {
+    mpz_set_ui(e, 65537);               // Use common RSA public exponent
+    mpz_t gcd_result;
+    mpz_init(gcd_result);
 
-    while (e < c_totient) {
-        if (gcd(e, c_totient) == 1 && __builtin_popcount(e) <= 8) break;
-        e += 2; // Increment by 2 to ensure e is odd
+    gcd(gcd_result, e, c_totient);
+    if (mpz_cmp_ui(gcd_result, 1) != 0) {
+        fprintf(stderr, "Error: e is not coprime with Carmichael's totient.\n");
+        exit(EXIT_FAILURE);
     }
 
-    return e;
+    mpz_clear(gcd_result);
 }
 
 // Function to calculate d such that d * e ≡ 1 (mod c_totient)
-int calculate_d(int e, int p, int q) {
-    return mod_inverse(e, carmichael(p, q));
+void calculate_d(mpz_t d, const mpz_t e, const mpz_t c_totient) {
+    if (!mod_inverse(d, e, c_totient)) {
+        fprintf(stderr, "Error: Failed to compute modular inverse for d.\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
