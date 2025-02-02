@@ -4,18 +4,11 @@
     Description: This file contains the functions to help the RBRSA keygen program.
 */
 #include "arithmetic_ops.h"
+#include <gmp.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
 
-
-// Array of Valid pairs
-valid_pair valid_pairs[] = {
-    {MIN_L, MIN_N},
-    {MID_L, MID_N},
-    {MID_L, MAX_N},
-    {MAX_L, MAX_N}
-};
 
 // Function to generate a random prime number with a specified bit length
 void generate_prime_with_bit_length(mpz_t prime, int bit_length) {
@@ -51,13 +44,13 @@ void lcm(mpz_t result, const mpz_t a, const mpz_t b) {
 // Function to calculate the modular multiplicative inverse
 int mod_inverse(mpz_t result, const mpz_t a, const mpz_t m) {
     if (mpz_invert(result, a, m) == 0) {
-        fprintf(stderr, "Error: Modular inverse does not exist.\n");
-        return 0;
+        perror("Error: Modular inverse does not exist.\n");
+        return FAILURE;
     }
-    return 1;
+    return SUCCESS;
 }
 
-// Function to calculate Carmichael's totient function
+// Function to calculate Carmichael's totient function (λ(n) = lcm(p-1, q-1))
 void carmichael(mpz_t result, const mpz_t p, const mpz_t q) {
     mpz_t p1, q1;
     mpz_inits(p1, q1, NULL);
@@ -81,9 +74,9 @@ void calculate_e(mpz_t e, const mpz_t c_totient) {
     mpz_init(gcd_result);
 
     gcd(gcd_result, e, c_totient);
-    if (mpz_cmp_ui(gcd_result, 1) != 0) {
+    if (mpz_cmp_ui(gcd_result, 1) != SUCCESS) {
         fprintf(stderr, "Error: e is not coprime with Carmichael's totient.\n");
-        exit(EXIT_FAILURE);
+        exit(FAILURE);
     }
 
     mpz_clear(gcd_result);
@@ -91,9 +84,9 @@ void calculate_e(mpz_t e, const mpz_t c_totient) {
 
 // Function to calculate d such that d * e ≡ 1 (mod c_totient)
 void calculate_d(mpz_t d, const mpz_t e, const mpz_t c_totient) {
-    if (!mod_inverse(d, e, c_totient)) {
+    if (mod_inverse(d, e, c_totient) != SUCCESS) {
         fprintf(stderr, "Error: Failed to compute modular inverse for d.\n");
-        exit(EXIT_FAILURE);
+        exit(FAILURE);
     }
 }
 

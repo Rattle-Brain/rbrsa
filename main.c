@@ -1,12 +1,15 @@
 #include "keygen/arithmetic_ops.h"
+#include "keygen/file_utils.h"
 
 int main() {
 
-    int bits = MAX_L;
-    mpz_t prime;
-    generate_prime_with_bit_length(prime, bits);
+    RBRSA_PublicKey public_key;
+    RBRSA_PrivateKey private_key;
 
-    gmp_printf("Prime number with %d-bit length: %Zd\n", bits, prime);
-    
+    generate_keys(&public_key, &private_key, VALID_PAIR_1024);
+
+    dump_public_key(&public_key);
+    dump_private_key(&private_key);
+
     return 0;
 }
