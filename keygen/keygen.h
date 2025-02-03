@@ -1,5 +1,5 @@
 #include <gmp.h>
-#include <pthread.h>
+#include <omp.h>
 #include <stdint.h>
 #include <sys/types.h>
 

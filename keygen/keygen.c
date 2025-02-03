@@ -26,6 +26,7 @@
 void generate_prime_factors(RBRSA_PrivateKey *private_key, int pair) {
     mpz_init(private_key->p);
     mpz_init(private_key->q);
+
     generate_prime_with_bit_length(private_key->p, valid_pairs[pair].n);
     generate_prime_with_bit_length(private_key->q, valid_pairs[pair].l);
 }
@@ -109,10 +110,8 @@ void generate_keys(RBRSA_PublicKey *public_key, RBRSA_PrivateKey *private_key, i
 
     // Generate the prime factors p and q
     generate_prime_factors(private_key, pair);
-
     // Generate the modulus n = p * q and put it in pk and PubK
     generate_n(private_key->n, private_key->p, private_key->q);
-    mpz_init_set(public_key->n, private_key->n);
 
     // Generate the public exponent e
     generate_e(public_key, private_key->p, private_key->q);
@@ -128,5 +127,8 @@ void generate_keys(RBRSA_PublicKey *public_key, RBRSA_PrivateKey *private_key, i
 
     // Generate the CRT coefficient qInv
     generate_qInv(private_key);
+
+    // Set the public key modulus to the private key modulus
+    mpz_init_set(public_key->n, private_key->n);
 
 }
