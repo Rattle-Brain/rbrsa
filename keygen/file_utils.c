@@ -7,43 +7,90 @@
 #include <stdio.h>
 
 void serialize_rsa_public_key(FILE *file, RBRSA_PublicKey *pub_key) {
-    char* buffer = malloc(4096);
-    gmp_fprintf(file, "-----BEGIN RBRSA PUBLIC KEY-----\n");
-    fprintf(file, "RBRSA%lu", (sizeof(pub_key->n) * 8));
+    char* buffer = malloc(KEY_BUFF_SIZE/4);
+    char* encoded_buffer;
+    char* line = malloc(LINE_SIZE * sizeof(char));
+    int i = 0, c = 0;
+
     gmp_sprintf(buffer, "n: %Zd\ne: %Zd", pub_key->n, pub_key->e);
-    base64_encode(buffer);
-    fputs(base64_encode(buffer), file);
-    gmp_fprintf(file, "\n-----END RBRSA PUBLIC KEY-----\n");
+    
+    encoded_buffer = base64_encode(buffer);
+    int encode_buffer_length = strlen(encoded_buffer);
+
+    while (i < encode_buffer_length) {
+        line[c] = encoded_buffer[i];
+        if (c == LINE_SIZE) {
+            line[c+1] = '\0';
+            fprintf(file, "%s\n", line);
+            c = -1;
+        }else if(i == encode_buffer_length - 1) {
+            line[c+1] = '\0';
+            fprintf(file, "%s", line);
+        }
+        c++;
+        i++;
+    }
+    //fprintf(file, "%s", base64_encode(buffer));
+    free(buffer);
+    free(encoded_buffer);
+    free(line);
+    fprintf(file, "%s", base64_encode(buffer));
 }
 
 void serialize_rsa_private_key(FILE *file, RBRSA_PrivateKey *priv_key) {
-    char* buffer = malloc(4096);
-    gmp_fprintf(file, "-----BEGIN RBRSA PRIVATE KEY-----\n");
-    fprintf(file, "RBRSA%lu", (sizeof(priv_key->n) * 8));
+    char* buffer = malloc(KEY_BUFF_SIZE * sizeof(char));
+    char* encoded_buffer;
+    char* line = malloc(LINE_SIZE * sizeof(char));
+    int i = 0, c = 0;
+
     gmp_sprintf(buffer, "n: %Zd\nd: %Zd\np: %Zd\nq: %Zd\ndP: %Zd\ndQ: %Zd\nqInv: %Zd",
                 priv_key->n, priv_key->d, priv_key->p, priv_key->q, priv_key->dmodp, priv_key->dmodq, priv_key->qinv);
-    base64_encode(buffer);
-    fputs(base64_encode(buffer), file);
-    gmp_fprintf(file, "\n-----END RBRSA PRIVATE KEY-----\n");
+
+    encoded_buffer = base64_encode(buffer);
+    int encode_buffer_length = strlen(encoded_buffer);
+
+    while (i < encode_buffer_length) {
+        line[c] = encoded_buffer[i];
+        if (c == LINE_SIZE) {
+            line[c+1] = '\0';
+            fprintf(file, "%s\n", line);
+            c = -1;
+        }else if(i == encode_buffer_length - 1) {
+            line[c+1] = '\0';
+            fprintf(file, "%s", line);
+        }
+        c++;
+        i++;
+    }
+    //fprintf(file, "%s", base64_encode(buffer));
     free(buffer);
+    free(encoded_buffer);
+    free(line);
 }
 
 // Create a file to store the public key
 void dump_public_key(RBRSA_PublicKey *pub_key) {
-    FILE *file = fopen("key.pub.rbrsa", "w");
+    FILE *file = fopen("key.rbrsa.pub", "w");
+    fprintf(file, "-----BEGIN RBRSA PUBLIC KEY-----\n");
     serialize_rsa_public_key(file, pub_key);
+    fprintf(file, "\n-----END RBRSA PUBLIC KEY-----\n");
     fclose(file);
 }
 
 // Create a file to store the private key
 void dump_private_key(RBRSA_PrivateKey *priv_key) {
     FILE *file = fopen("key.rbrsa", "w");
+    fprintf(file, "-----BEGIN RBRSA PRIVATE KEY-----\n");
     serialize_rsa_private_key(file, priv_key);
+    fprintf(file, "\n-----END RBRSA PRIVATE KEY-----\n");
     fclose(file);
 }
 
 // Base64 encode the key data
 char* base64_encode(char* key_data) {
+
+    int rebalance = 0;
+
     // Base64 encoding
     size_t key_data_length = strlen(key_data);
     size_t encoded_length = 4 * ((key_data_length + 2) / 3);
@@ -66,7 +113,7 @@ char* base64_encode(char* key_data) {
 
     // Pad the encoded key
     for (size_t i = 0; i < (3 - key_data_length % 3) % 3; i++) {
-        encoded_key[encoded_length - 1 - i] = '=';
+        encoded_key[encoded_length - 1 - i ] = '=';
     }
 
     return encoded_key;

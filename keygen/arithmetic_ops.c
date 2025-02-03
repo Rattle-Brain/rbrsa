@@ -25,7 +25,7 @@ void generate_prime_with_bit_length(mpz_t prime, int bit_length) {
         mpz_urandomb(prime, state, bit_length);
         mpz_setbit(prime, bit_length - 1);          // Ensure the number is of the desired bit length
         mpz_setbit(prime, 0);                       // Ensure it's odd
-    } while (mpz_probab_prime_p(prime, 25) == 0);   // Use Miller-Rabin test
+    } while (mpz_probab_prime_p(prime, 50) == 0);   // Use Miller-Rabin test
 
     gmp_randclear(state);
 }
