@@ -20,11 +20,11 @@ void serialize_rsa_public_key(FILE *file, RBRSA_PublicKey *pub_key) {
     while (i < encode_buffer_length) {
         line[c] = encoded_buffer[i];
         if (c == LINE_SIZE) {
-            line[c+1] = '\0';
+            line[c] = '\0';
             fprintf(file, "%s\n", line);
             c = -1;
         }else if(i == encode_buffer_length - 1) {
-            line[c+1] = '\0';
+            line[c] = '\0';
             fprintf(file, "%s", line);
         }
         c++;
