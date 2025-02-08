@@ -24,11 +24,20 @@
 
 // Generate the prime factors p and q to calculate n (modulus)
 void generate_prime_factors(RBRSA_PrivateKey *private_key, int pair) {
-    mpz_init(private_key->p);
-    mpz_init(private_key->q);
 
-    generate_prime_with_bit_length(private_key->p, valid_pairs[pair].n);
-    generate_prime_with_bit_length(private_key->q, valid_pairs[pair].l);
+    #pragma omp sections
+    {
+        #pragma omp section
+        {
+            mpz_init(private_key->p);
+            generate_prime_with_bit_length(private_key->p, valid_pairs[pair].l);
+        }
+        #pragma omp section
+        {
+            mpz_init(private_key->q);
+            generate_prime_with_bit_length(private_key->q, valid_pairs[pair].n);
+        }
+    }
 }
 
 // Generate the modulus n = p * q

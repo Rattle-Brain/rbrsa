@@ -23,7 +23,7 @@ void generate_prime_with_bit_length(mpz_t prime, int bit_length) {
     gmp_randseed_ui(state, time(NULL));
 
     int found = 0;
-    #pragma omp parallel shared(found)
+    #pragma omp parallel num_threads(DEFAULT_OMP_THREADS) shared(found)
     {
         mpz_t local_prime;
         gmp_randstate_t local_state;

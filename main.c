@@ -15,7 +15,7 @@ int main() {
     clock_t end_time = clock();
     double time_spent = (double)(end_time - start_time) / CLOCKS_PER_SEC;
 
-    #pragma omp parallel sections
+    #pragma omp sections
     {
         #pragma omp section
         {
@@ -26,6 +26,8 @@ int main() {
             dump_private_key(&private_key);
         }
     }
+    // dump_public_key(&public_key);
+    // dump_private_key(&private_key);
 
     printf("Time taken to generate keys: %f seconds\n", time_spent);
 

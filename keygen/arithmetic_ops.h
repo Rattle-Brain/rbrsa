@@ -40,6 +40,9 @@ static valid_pair valid_pairs[] = {
 #define VALID_PAIR_2048_b 2    // Acceptable pair of L/N (2048/256)
 #define VALID_PAIR_3072 3      // Acceptable pair of L/N (3072/256)
 
+// Limit to half the max threads to avoid excessive sync overhead
+#define DEFAULT_OMP_THREADS (omp_get_max_threads()/2)
+
 
 // Function prototypes
 int is_prime(unsigned long long n);
